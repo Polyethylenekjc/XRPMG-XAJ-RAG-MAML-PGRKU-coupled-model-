@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/schemas/config_schema.json",
+  "title": "PCDMK Main Configuration Schema Definition",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Data configuration block, including a list of datasets and global data configuration",
+      "properties": {
+        "datasets": {
+          "type": "array",
+          "description": "List of datasets, where each dataset has its own configuration",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Dataset name"
+              },
+              "processors": {
+                "type": "array",
+                "description": "List of data processors, defining the data processing methods and their parameters to be used",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Processor name, supporting StandardScalerProcessor, GrangerCausalityProcessor, etc."
+                    },
+                    "params": {
+                      "type": "object",
+                      "description": "Processor parameters, configured according to different processor types"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              "window": {
+                "type": "integer",
+                "description": "Time window size, used to build sliding window features"
+              },
+              "test_size": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Test set ratio, for example, 0.2 means an 8:2 split"
+              },
+              "path": {
+                "type": "string",
+                "description": "Data file path"
+              },
+              "target_column": {
+                "type": "string",
+                "description": "Target column name"
+              },
+              "ignore_columns": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of columns to be ignored"
+              }
+            },
+            "required": [
+              "name",
+              "processors",
+              "path",
+              "target_column"
+            ]
+          }
+        }
+      },
+      "required": [
+        "datasets"
+      ]
+    },
+    "models": {
+      "type": "object",
+      "description": "Model configuration block, used to define the model's enabled status, type, hyperparameters, and optional trainer settings (such as cross-validation and scoring metrics).",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether to enable this model"
+          },
+          "type": {
+            "type": "string",
+            "description": "Model type, such as RandomForestClassifier, LogisticRegression, etc."
+          },
+          "params": {
+            "type": "object",
+            "description": "Model parameters, configured with corresponding hyperparameters based on different model types"
+          },
+          "trainer": {
+            "type": "object",
+            "description": "Trainer parameters (optional), used to configure the model training process",
+            "properties": {
+              "cv": {
+                "type": "integer",
+                "description": "Number of cross-validation folds"
+              },
+              "scoring": {
+                "type": "string",
+                "description": "Evaluation metric, such as accuracy, precision, etc."
+              }
+            }
+          }
+        },
+        "required": [
+          "enabled",
+          "type"
+        ]
+      }
+    },
+    "trainers": {
+      "type": "object",
+      "description": "Global trainer configuration, providing uniform training parameters for different models, such as the number of cross-validation folds and evaluation metrics",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether to enable this trainer configuration"
+          },
+          "cv": {
+            "type": "integer",
+            "description": "Number of cross-validation folds"
+          },
+          "scoring": {
+            "type": "string",
+            "description": "Evaluation metric, such as accuracy, precision, etc."
+          }
+        }
+      }
+    },
+    "analyzers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "optional": true
+          },
+          "params": {
+            "type": "object",
+            "optional": true
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "analysis_result_path": {
+          "type": "string",
+          "description": "Analysis results output path, only specifying the folder path"
+        },
+        "data_result_path": {
+          "type": "string",
+          "description": "Data processing results output path, only specifying the folder path"
+        }
+      },
+      "required": [
+        "analysis_result_path",
+        "data_result_path"
+      ]
+    }
+  },
+  "required": [
+    "data",
+    "analyzers",
+    "output"
+  ]
+}

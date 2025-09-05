@@ -1,0 +1,261 @@
+analyzers:
+- name: plot_analyzer
+- name: metrics_analyzer
+- name: shap_analyzer
+  params:
+    model_name: gr2ku_time_series_model
+- name: mape_interval_analyzer
+- name: summary_analyzer
+data:
+  datasets:
+  - enabled: true
+    name: BR_U
+    path: data/boertalahe_BRU.csv
+    processors: &id001
+    - name: limit_processor
+      params:
+        limit: 1095
+    - name: minimax
+      params: {}
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+  - enabled: true
+    name: BR_M
+    path: data/boertalahe_BRM.csv
+    processors: *id001
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+  - enabled: true
+    name: BR_D
+    path: data/boertalahe_BRD.csv
+    processors: *id001
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+  - enabled: true
+    name: NA_U
+    path: data/nanpanjiang_NAU.csv
+    processors: *id001
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+  - enabled: true
+    name: NA_M
+    path: data/nanpanjiang_NAM.csv
+    processors: *id001
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+  - enabled: true
+    name: NA_D
+    path: data/nanpanjiang_NAD.csv
+    processors: *id001
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+  - enabled: true
+    name: TA_U
+    path: data/taohe_TAU.csv
+    processors: *id001
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+  - enabled: true
+    name: TA_M
+    path: data/taohe_TAM.csv
+    processors: *id001
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+  - enabled: true
+    name: TA_D
+    path: data/taohe_TAD.csv
+    processors: *id001
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+  default_dataset:
+    processors: *id001
+    target_column: runoffs
+    test_size: 0.2
+    window: 15
+forecast_horizon: 1
+models:
+  KAN:
+    enabled: false
+    params:
+      feature_size: 10
+      forecast_horizon: 1
+      grid_eps: 0.02
+      grid_range:
+      - -1
+      - 1
+      grid_size: 5
+      kan_layers_hidden:
+      - 150
+      - 64
+      - 32
+      - 1
+      scale_base: 1.0
+      scale_noise: 0.1
+      scale_spline: 1.0
+      seq_length: 15
+      spline_order: 3
+    trainer:
+      batch_size: 32
+      epochs: 20
+      learning_rate: 0.001
+      type: BaseModelTrainer
+    type: KAN
+  attention_gru:
+    enabled: true
+    params:
+      dropout: 0.1
+      forecast_steps: 1
+      hidden_dim: 64
+      input_dim: 10
+      num_layers: 2
+    trainer:
+      batch_size: 32
+      epochs: 100
+      learning_rate: 0.001
+      type: BaseModelTrainer
+    type: attention_gru
+  cnn_transformer:
+    enabled: false
+    params:
+      dropout: 0.1
+      forecast_steps: 1
+      hidden_dim: 64
+      input_dim: 10
+      num_heads: 4
+      num_layers: 2
+      seq_length: 15
+    trainer:
+      batch_size: 32
+      epochs: 50
+      learning_rate: 0.001
+      type: BaseModelTrainer
+    type: cnn_transformer
+  eklt_model:
+    enabled: false
+    params:
+      dropout: 0.1
+      forecast_steps: 1
+      input_dim: 10
+      lstm_hidden_dim: 64
+      lstm_num_layers: 2
+      output_dim: 1
+      seq_length: 30
+      transformer_d_model: 64
+      transformer_dim_feedforward: 128
+      transformer_nhead: 8
+      transformer_num_layers: 2
+    trainer:
+      batch_size: 32
+      epochs: 100
+      learning_rate: 0.001
+      type: BaseModelTrainer
+    type: eklt_model
+  grku_time_series_model:
+    enabled: false
+    params:
+      grid_eps: 0.05
+      grid_range:
+      - -1
+      - 1
+      grid_size: 10
+      hidden_dim: 128
+      input_dim: 10
+      num_layers: 3
+      output_dim: 1
+      rag_dataset_path: data/meta
+      ragon: true
+      scale_base: 1
+      scale_noise: 0.2
+      scale_spline: 1.5
+      seq_length: 15
+      spline_order: 3
+      top_k: 4
+    trainer:
+      batch_size: 64
+      fine_tune_lr: 0.01
+      fine_tune_steps: 20
+      forecast_horizon: 1
+      inner_update_steps: 5
+      learning_rate: 0.001
+      meta_dataset_dir: /home/fifth/code/Python/GTLF/data/meta
+      meta_epochs: 20
+      meta_learning_rate: 0.001
+      meta_model_path: /home/fifth/code/Python/GTLF/meta_models/
+      physics_dataset_dir: data/physical
+      physics_weight: 0.15
+      save_plot_path: .pic
+      target_column: runoffs
+      type: PhysicsMetaLearningTrainer
+      use_physics_in_meta_only: true
+      window_size: 15
+    type: grku_time_series_model
+  gru_time_series_model:
+    enabled: false
+    params:
+      forecast_steps: 1
+      hidden_dim: 64
+      input_dim: 10
+      num_layers: 2
+      seq_length: 15
+    trainer:
+      batch_size: 32
+      epochs: 20
+      learning_rate: 0.001
+      type: BaseModelTrainer
+    type: gru_time_series_model
+  lstm_time_series_model:
+    enabled: false
+    params:
+      forecast_steps: 1
+      hidden_dim: 64
+      input_dim: 10
+      num_layers: 2
+      seq_length: 15
+    trainer:
+      batch_size: 32
+      epochs: 20
+      learning_rate: 0.001
+      type: BaseModelTrainer
+    type: lstm_time_series_model
+  simple_pytorch_model:
+    enabled: false
+    params:
+      forecast_steps: 1
+      input_dim: 10
+      output_dim: 1
+      seq_length: 15
+    trainer:
+      batch_size: 32
+      epochs: 20
+      learning_rate: 0.001
+      type: BaseModelTrainer
+    type: simple_pytorch_model
+  vmdi_lstm_ed_model:
+    enabled: false
+    params:
+      dropout: 0.2
+      forecast_steps: 1
+      hidden_dim: 64
+      input_dim: 10
+      num_layers: 2
+      output_dim: 1
+      seq_length: 15
+      target_feature_index: 3
+    trainer:
+      batch_size: 32
+      epochs: 20
+      learning_rate: 0.001
+      type: BaseModelTrainer
+    type: vmdi_lstm_ed_model
+output:
+  analysis_result_path: res/analysis/
+  data_result_path: res/data/
